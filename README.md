@@ -10,7 +10,9 @@
 A centralized, responsive, role-based Student Management System built for engineering colleges offering:
 1. **Undergraduate (UG)**: 4-Year B.Tech programs (Year 1 to Year 4, Semesters 1 to 8).
 2. **Postgraduate (PG)**: 2-Year M.Tech programs (Semesters 1 to 4).
-3. **Ph.D. Research**: Configurable doctoral candidate tracking.
+3. **Ph.D. Research**: Configurable doctoral candidate tracking across variable research durations.
+
+Pre-populated with **9,000 realistic fictional student records** across **20 engineering departments**, complete with parent profiles, contact diaries, attendance records, and continuous assessment grading.
 
 ---
 
@@ -38,7 +40,7 @@ flowchart TD
 | **Subject Faculty** | Assigned Sections | Section-wise attendance marking, evaluation, marks submission |
 | **Guest Lecturer** | Restricted Sessions | Time-limited read-only access to assigned lecture sessions and course materials |
 | **Student** | Personal Record | Subject-wise attendance %, published marks, timetable, contact diary |
-| **Admin Staff** | Institutional Registry | Student enrollment, department & program registry, academic years & batches |
+| **Admin Staff** | Institutional Registry | Student enrollment, department & program registry, bulk student generator, CSV import/export |
 | **Parent / Guardian** | Linked Ward Only | View ward's attendance percentage, published results, college announcements |
 
 ---
@@ -68,10 +70,13 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Populate database schema and fictional institutional seed data
-python seed_data.py
+# Run database migrations
+alembic upgrade head
 
-# Run the automated backend verification suite
+# Populate 9,000 fictional students across 20 departments (UG, PG, PhD)
+python seed_bulk_students.py
+
+# Run the automated backend verification suite (13 test suites)
 python test_api.py
 
 # Launch the FastAPI ASGI server
@@ -102,6 +107,36 @@ The portal will open at `http://localhost:5173`.
 
 ---
 
+## ⚡ Live Features & Admin Generator
+
+### 1. Student Data Generator (`/admin/student-generator`)
+- Filter and generate custom batch sizes per department, program (UG / PG / PhD), and academic year.
+- Configurable PhD research year groups (Years 1 to 5+).
+- Real-time department statistics breakdown.
+- Export generated student lists to CSV directly from the dashboard.
+- Safe transactional clearing of sample students without corrupting core system configurations.
+
+### 2. Department & Program Management (`/departments`)
+- Manage 20 engineering departments (CSE, IT, AIDS, AIML, CSBS, CYS, ECE, EEE, MECH, etc.).
+- Add and modify programs, batches, and semesters dynamically without code edits.
+
+### 3. Attendance Module (`/attendance`)
+- Period-wise (Periods 1–8) and daily attendance marking.
+- Quick "Mark All Present" shortcut with instant toggle switches (Present, Absent, On Duty, Medical Leave).
+- Statutory attendance percentage calculation with automated alerts for students with attendance $< 75\%$.
+- Student attendance correction requests with HOD review and approval workflow.
+
+### 4. Continuous Evaluation & Grading (`/marks`)
+- Direct entry for Internal Assessments (IA1, IA2, IA3), Assignments, Lab Practicals, and Model Exams.
+- Anna University & autonomous grading scale: `O` (91-100), `A+` (81-90), `A` (71-80), `B+` (61-70), `B` (50-60), `RA` (<50).
+- Automatic GPA & CGPA calculation upon HOD approval and official publication.
+
+### 5. Private Contact Diary & Public Directory (`/contacts`)
+- Categorized personal directory: Parent, Guardian, Emergency, Friend, Faculty, Department Office.
+- **Affirmative Consent Safeguard**: Student contacts are strictly private by default; entries only appear in the public directory when explicitly toggled on by the student.
+
+---
+
 ## 🔑 Demo Institutional Accounts (One-Click Testing)
 
 All accounts are pre-configured with realistic fictional engineering college data:
@@ -115,8 +150,42 @@ All accounts are pre-configured with realistic fictional engineering college dat
 | **Guest Lecturer** | `guest.lecturer@engineering.edu` | `Guest@123` | Assigned lecture sessions |
 | **Student (UG Year 2)**| `2024CS101` | `Student@123` | Arun Kumar (B.Tech CSE Sem 3) |
 | **Student (UG Year 3)**| `2023CS205` | `Student@123` | Priya Raman (B.Tech CSE Sem 5) |
-| **Admin Staff** | `admin@engineering.edu` | `Admin@123` | Institutional registry & batches |
+| **Admin Staff** | `admin@engineering.edu` | `Admin@123` | Institutional registry, generator & batches |
 | **Parent** | `parent.ramesh@gmail.com` | `Parent@123` | Ward Arun Kumar (2024CS101) |
+
+*(Note: On the login page, you can click any of the 8 demo buttons to automatically sign in as that role).*
+
+---
+
+## 🌐 Production Cloud Deployment Guide
+
+### A. Frontend on GitHub Pages
+1. Push your repository to GitHub:
+   ```bash
+   git remote add origin https://github.com/<your-username>/<repo-name>.git
+   git push -u origin master
+   ```
+2. In your GitHub repository settings:
+   - Navigate to **Settings** > **Pages**.
+   - Under **Build and deployment** > **Source**, select **GitHub Actions**.
+3. In **Settings** > **Secrets and variables** > **Actions**, add a repository secret:
+   - Name: `VITE_API_URL`
+   - Value: `https://your-backend-service.onrender.com` (your deployed backend URL).
+4. Pushing to `master` will automatically trigger `.github/workflows/frontend-deploy.yml`.
+
+### B. Backend on Render / Railway / Fly.io
+1. Create a **Web Service** pointing to your repository's `backend` folder.
+2. Build Command: `pip install -r requirements.txt && alembic upgrade head`
+3. Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. Environment Variables:
+   - `DATABASE_URL`: Your managed PostgreSQL connection URI (e.g., from Neon or Supabase).
+   - `JWT_SECRET_KEY`: A high-entropy 256-bit secret string.
+   - `CORS_ORIGINS`: `https://<your-username>.github.io`
+
+### C. Managed PostgreSQL (Neon / Supabase / AWS RDS)
+1. Provision a free PostgreSQL instance on [Neon.tech](https://neon.tech) or [Supabase.com](https://supabase.com).
+2. Copy the connection string: `postgresql://user:password@host/dbname?sslmode=require`.
+3. Set `DATABASE_URL` in your backend environment variables; SQLAlchemy automatically routes queries to PostgreSQL.
 
 ---
 
@@ -125,5 +194,6 @@ All accounts are pre-configured with realistic fictional engineering college dat
 1. **Object-Level Authorization**: Roll numbers and IDs are validated against the authenticated session token. Cross-student profile lookups return strict `403 Forbidden`.
 2. **Contact Privacy Safeguard**: Parent phone numbers, home addresses, and emergency contacts are strictly private. The public directory only exposes entries where students gave explicit affirmative consent (`is_public_in_directory: true`).
 3. **Audit Trail**: Every student lookup, grade alteration, and contact diary access triggers an immutable record in `audit_logs`.
-4. **Attendance Rule**: Low attendance is automatically flagged when attendance drops below the 75% statutory requirement:
+4. **Statutory Attendance Formula**:
    $$\text{Attendance Percentage} = \left(\frac{\text{Classes Attended}}{\text{Conducted Classes}}\right) \times 100$$
+   Students with $< 75\%$ attendance are highlighted with visual warning alerts.
