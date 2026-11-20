@@ -4,12 +4,20 @@ import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Login from '../pages/auth/Login';
 import DeanDashboard from '../pages/dean/DeanDashboard';
+import HodDashboard from '../pages/hod/HodDashboard';
+import FacultyDashboard from '../pages/faculty/FacultyDashboard';
+import GuestDashboard from '../pages/guest/GuestDashboard';
 import StudentDashboard from '../pages/student/StudentDashboard';
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import ParentDashboard from '../pages/parent/ParentDashboard';
 import AttendancePage from '../pages/attendance/AttendancePage';
 import MarksPage from '../pages/marks/MarksPage';
 import ContactsPage from '../pages/contacts/ContactsPage';
 import StudentSearchPage from '../pages/search/StudentSearchPage';
 import ReportsPage from '../pages/reports/ReportsPage';
+import StudentDataGeneratorPage from '../pages/admin/StudentDataGeneratorPage';
+import StudentManagementPage from '../pages/students/StudentManagementPage';
+import DepartmentManagementPage from '../pages/departments/DepartmentManagementPage';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -30,10 +38,24 @@ const RoleDashboardRouter = () => {
   const { user } = useAuth();
   const role = user?.role || 'student';
 
-  if (role === 'dean' || role === 'admin') {
-    return <DeanDashboard />;
+  switch (role) {
+    case 'dean':
+      return <DeanDashboard />;
+    case 'hod':
+      return <HodDashboard />;
+    case 'faculty':
+    case 'subject_faculty':
+      return <FacultyDashboard />;
+    case 'guest':
+      return <GuestDashboard />;
+    case 'admin':
+      return <AdminDashboard />;
+    case 'parent':
+      return <ParentDashboard />;
+    case 'student':
+    default:
+      return <StudentDashboard />;
   }
-  return <StudentDashboard />;
 };
 
 export default function AppRoutes() {
@@ -56,6 +78,11 @@ export default function AppRoutes() {
         <Route path="search" element={<StudentSearchPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="audit" element={<DeanDashboard />} />
+
+        {/* Admin & Management Specific Routes */}
+        <Route path="admin/generator" element={<StudentDataGeneratorPage />} />
+        <Route path="students/manage" element={<StudentManagementPage />} />
+        <Route path="departments/manage" element={<DepartmentManagementPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

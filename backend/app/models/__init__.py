@@ -9,7 +9,7 @@ from app.models.faculty import Faculty, Staff, SubjectAllocation
 from app.models.curriculum import Subject, StudentEnrollment
 from app.models.student import Student, ParentGuardian, StudentContact
 from app.models.attendance import AttendanceSession, AttendanceRecord
-from app.models.assessment import AssessmentType, Mark, ExaminationResult
+from app.models.assessment import AssessmentType, Mark, ExaminationResult, GradingRule
 from app.models.communication import Notification, Announcement
 from app.models.audit import ApprovalRecord, AuditLog
 
@@ -38,6 +38,7 @@ __all__ = [
     "AssessmentType",
     "Mark",
     "ExaminationResult",
+    "GradingRule",
     "Notification",
     "Announcement",
     "ApprovalRecord",

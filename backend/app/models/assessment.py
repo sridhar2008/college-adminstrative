@@ -64,3 +64,15 @@ class ExaminationResult(BaseModel):
     __table_args__ = (
         UniqueConstraint("student_id", "semester_id", name="uq_student_semester_result"),
     )
+
+
+class GradingRule(BaseModel):
+    __tablename__ = "grading_rules"
+
+    grade_letter = Column(String(10), nullable=False)  # 'O', 'A+', 'A', 'B+', 'B', 'RA'
+    min_score = Column(Float, nullable=False)          # e.g. 90.0
+    max_score = Column(Float, nullable=False)          # e.g. 100.0
+    grade_point = Column(Float, nullable=False)        # e.g. 10.0
+    description = Column(String(50), nullable=True)    # e.g. "Outstanding"
+    is_active = Column(Boolean, default=True, nullable=False)
+

@@ -82,3 +82,24 @@ def get_announcements(
             "created_at": str(a.created_at)
         } for a in announcements
     ]
+
+
+@router.post("/announcements")
+def create_announcement(
+    data: AnnouncementCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Publish a new announcement for students, faculty, or the entire college."""
+    ann = Announcement(
+        title=data.title.strip(),
+        content=data.content.strip(),
+        target_role=data.target_role.upper(),
+        department_id=data.department_id,
+        posted_by_user_id=current_user.id,
+        is_pinned=data.is_pinned
+    )
+    db.add(ann)
+    db.commit()
+    return {"success": True, "message": "Announcement published successfully.", "id": ann.id}
+

@@ -19,7 +19,9 @@ import {
   Building2,
   FileText,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Database,
+  Building
 } from 'lucide-react';
 
 export default function DashboardLayout() {
@@ -35,7 +37,6 @@ export default function DashboardLayout() {
     navigate('/login');
   };
 
-  // Role-aware navigation links
   const getNavLinks = () => {
     const base = [
       { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -51,23 +52,34 @@ export default function DashboardLayout() {
     } else if (role === 'faculty' || role === 'subject_faculty') {
       base.push(
         { name: 'Mark Attendance', path: '/attendance', icon: CalendarCheck },
-        { name: 'Enter Marks', path: '/marks', icon: Award },
+        { name: 'Course Marks', path: '/marks', icon: Award },
         { name: 'Student Lookup', path: '/search', icon: Search },
         { name: 'Academic Reports', path: '/reports', icon: FileText }
       );
     } else if (role === 'hod') {
       base.push(
+        { name: 'Department Students', path: '/students/manage', icon: Users },
         { name: 'Attendance Monitor', path: '/attendance', icon: CalendarCheck },
         { name: 'Marks & Approvals', path: '/marks', icon: Award },
-        { name: 'Department Students', path: '/search', icon: Search },
         { name: 'Department Reports', path: '/reports', icon: FileText }
       );
-    } else if (role === 'dean' || role === 'admin') {
+    } else if (role === 'admin') {
       base.push(
+        { name: 'Student Data Generator', path: '/admin/generator', icon: Database },
+        { name: 'Student Registry', path: '/students/manage', icon: Users },
+        { name: 'Departments & Degrees', path: '/departments/manage', icon: Building },
+        { name: 'Attendance Overview', path: '/attendance', icon: CalendarCheck },
+        { name: 'Academic Marks', path: '/marks', icon: Award },
+        { name: 'Reports & Exports', path: '/reports', icon: FileText }
+      );
+    } else if (role === 'dean') {
+      base.push(
+        { name: 'Institution Registry', path: '/students/manage', icon: Users },
+        { name: 'Departments & Degrees', path: '/departments/manage', icon: Building },
         { name: 'Attendance Overview', path: '/attendance', icon: CalendarCheck },
         { name: 'Academic Results', path: '/marks', icon: Award },
-        { name: 'Student Registry Search', path: '/search', icon: Search },
-        { name: 'Institution Reports', path: '/reports', icon: FileText },
+        { name: 'Student Search', path: '/search', icon: Search },
+        { name: 'Reports & Exports', path: '/reports', icon: FileText },
         { name: 'Audit Trail', path: '/audit', icon: ShieldCheck }
       );
     } else if (role === 'parent') {
@@ -195,7 +207,6 @@ export default function DashboardLayout() {
 
           {/* Right Header Icons */}
           <div className="flex items-center space-x-3">
-            {/* Quick Roll Search */}
             <button
               onClick={() => navigate('/search')}
               className="hidden md:flex items-center space-x-2 px-3 py-1.5 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
@@ -205,7 +216,6 @@ export default function DashboardLayout() {
               <kbd className="px-1.5 py-0.5 text-[10px] bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700">⌘K</kbd>
             </button>
 
-            {/* Dark Mode Switcher */}
             <button
               onClick={toggleTheme}
               className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -213,16 +223,6 @@ export default function DashboardLayout() {
             >
               {isDark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
             </button>
-
-            {/* Notifications */}
-            <div className="relative">
-              <button
-                className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative"
-              >
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900"></span>
-              </button>
-            </div>
           </div>
         </header>
 
