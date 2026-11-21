@@ -21,7 +21,8 @@ import {
   ShieldCheck,
   ChevronRight,
   Database,
-  Building
+  Building,
+  KeyRound
 } from 'lucide-react';
 
 export default function DashboardLayout() {
@@ -66,6 +67,7 @@ export default function DashboardLayout() {
     } else if (role === 'admin') {
       base.push(
         { name: 'Student Data Generator', path: '/admin/generator', icon: Database },
+        { name: 'Password & Credentials', path: '/admin/passwords', icon: KeyRound },
         { name: 'Student Registry', path: '/students/manage', icon: Users },
         { name: 'Departments & Degrees', path: '/departments/manage', icon: Building },
         { name: 'Attendance Overview', path: '/attendance', icon: CalendarCheck },
@@ -75,6 +77,7 @@ export default function DashboardLayout() {
     } else if (role === 'dean') {
       base.push(
         { name: 'Institution Registry', path: '/students/manage', icon: Users },
+        { name: 'Credential Manager', path: '/admin/passwords', icon: KeyRound },
         { name: 'Departments & Degrees', path: '/departments/manage', icon: Building },
         { name: 'Attendance Overview', path: '/attendance', icon: CalendarCheck },
         { name: 'Academic Results', path: '/marks', icon: Award },

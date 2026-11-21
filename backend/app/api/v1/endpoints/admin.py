@@ -7,11 +7,23 @@ from app.core.database import get_db
 from app.models.academic import AcademicYear, Semester, Batch, Section, Department, Program
 from app.models.student import Student
 from app.models.faculty import Faculty
-from app.models.user import User
+from app.models.user import User, Role
 from app.api.deps import get_current_user, RoleChecker
+from app.core.security import get_password_hash
 from app.services.student_generator import generate_fictional_students, clear_generated_sample_students, ensure_departments_and_programs
 
 router = APIRouter()
+
+
+class ResetUserPasswordRequest(BaseModel):
+    user_id: Optional[str] = None
+    username_or_email: Optional[str] = None
+    new_password: str
+
+
+class BulkPasswordResetRequest(BaseModel):
+    target_group: str  # "ALL", "STUDENTS", "FACULTY", "STAFF"
+    default_password: str
 
 
 class GenerateStudentsRequest(BaseModel):
@@ -150,4 +162,145 @@ def get_generator_stats(
     return {
         "departments": stats,
         "total_college_students": total_all
+    }
+
+
+@router.get("/users-credentials")
+def list_college_users_credentials(
+    role_filter: Optional[str] = "all",
+    search: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    current_user: User = Depends(RoleChecker(["admin", "dean"])),
+    db: Session = Depends(get_db)
+):
+    """
+    List college members (Students, Faculty, HODs, Deans, Staff)
+    with their usernames, roles, and status for institutional credential governance.
+    """
+    query = db.query(User).join(Role, User.role_id == Role.id)
+
+    if role_filter and role_filter != "all":
+        query = query.filter(Role.name.ilike(role_filter))
+
+    if search:
+        s_clean = f"%{search.strip()}%"
+        query = query.filter(
+            (User.username.ilike(s_clean)) |
+            (User.email.ilike(s_clean)) |
+            (User.full_name.ilike(s_clean))
+        )
+
+    total = query.count()
+    users = query.order_by(Role.name.asc(), User.username.asc()).offset(offset).limit(limit).all()
+
+    items = []
+    for u in users:
+        roll_or_emp = u.username
+        dept_name = "College Administration"
+        if u.student_profile:
+            roll_or_emp = u.student_profile.roll_number
+            dept = db.query(Department).filter(Department.id == u.student_profile.department_id).first()
+            dept_name = dept.name if dept else "Engineering"
+        elif u.faculty_profile:
+            roll_or_emp = u.faculty_profile.employee_id
+            dept = db.query(Department).filter(Department.id == u.faculty_profile.department_id).first()
+            dept_name = dept.name if dept else "Engineering"
+
+        items.append({
+            "id": u.id,
+            "username": u.username,
+            "full_name": u.full_name,
+            "email": u.email,
+            "role": u.role.name if u.role else "user",
+            "role_display": u.role.display_name if u.role else "User",
+            "identifier": roll_or_emp,
+            "department_name": dept_name,
+            "is_active": u.is_active
+        })
+
+    return {
+        "items": items,
+        "total": total,
+        "limit": limit,
+        "offset": offset
+    }
+
+
+@router.post("/reset-user-password")
+def reset_single_user_password(
+    req: ResetUserPasswordRequest,
+    current_user: User = Depends(RoleChecker(["admin", "dean"])),
+    db: Session = Depends(get_db)
+):
+    """Reset individual password for any student, faculty, or staff member."""
+    query = db.query(User)
+    if req.user_id:
+        user = query.filter(User.id == req.user_id).first()
+    elif req.username_or_email:
+        clean = req.username_or_email.strip()
+        user = query.filter((User.username.ilike(clean)) | (User.email.ilike(clean))).first()
+    else:
+        raise HTTPException(status_code=400, detail="Must provide user_id or username_or_email.")
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found.")
+
+    if len(req.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+
+    user.hashed_password = get_password_hash(req.new_password)
+    user.is_active = True
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"Password for {user.full_name} ({user.username}) has been updated successfully.",
+        "username": user.username,
+        "email": user.email
+    }
+
+
+@router.post("/bulk-reset-passwords")
+def bulk_reset_passwords(
+    req: BulkPasswordResetRequest,
+    current_user: User = Depends(RoleChecker(["admin", "dean"])),
+    db: Session = Depends(get_db)
+):
+    """
+    Standardize or reset passwords across an entire cohort
+    (e.g., all 9,000 students to 'Student@123' or all faculty to 'Faculty@123').
+    """
+    if len(req.default_password) < 6:
+        raise HTTPException(status_code=400, detail="Default password must be at least 6 characters.")
+
+    hashed = get_password_hash(req.default_password)
+    query = db.query(User).join(Role, User.role_id == Role.id)
+
+    target = req.target_group.upper()
+    if target == "STUDENTS":
+        query = query.filter(Role.name == "student")
+    elif target == "FACULTY":
+        query = query.filter(Role.name.in_(["faculty", "subject_faculty", "guest", "hod"]))
+    elif target == "STAFF":
+        query = query.filter(Role.name.in_(["admin", "staff", "parent"]))
+    elif target == "ALL":
+        pass  # all members
+    else:
+        raise HTTPException(status_code=400, detail=f"Invalid target group: {target}")
+
+    users = query.all()
+    count = 0
+    for u in users:
+        u.hashed_password = hashed
+        u.is_active = True
+        count += 1
+
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"Successfully updated and enabled passwords for {count} college members ({target}).",
+        "affected_count": count,
+        "default_password": req.default_password
     }

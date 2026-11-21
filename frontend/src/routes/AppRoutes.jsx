@@ -18,6 +18,7 @@ import ReportsPage from '../pages/reports/ReportsPage';
 import StudentDataGeneratorPage from '../pages/admin/StudentDataGeneratorPage';
 import StudentManagementPage from '../pages/students/StudentManagementPage';
 import DepartmentManagementPage from '../pages/departments/DepartmentManagementPage';
+import UserPasswordGovernancePage from '../pages/admin/UserPasswordGovernancePage';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -81,6 +82,7 @@ export default function AppRoutes() {
 
         {/* Admin & Management Specific Routes */}
         <Route path="admin/generator" element={<StudentDataGeneratorPage />} />
+        <Route path="admin/passwords" element={<UserPasswordGovernancePage />} />
         <Route path="students/manage" element={<StudentManagementPage />} />
         <Route path="departments/manage" element={<DepartmentManagementPage />} />
       </Route>
