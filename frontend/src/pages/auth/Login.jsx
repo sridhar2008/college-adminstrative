@@ -40,10 +40,19 @@ export default function Login() {
     }
   };
 
-  const selectDemoAccount = (demo) => {
+  const selectDemoAccount = async (demo) => {
     setUsername(demo.username);
     setPassword(demo.password);
     setError('');
+    setLoading(true);
+    try {
+      await login(demo.username, demo.password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Authentication failed. Please check credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -164,7 +173,8 @@ export default function Login() {
                   key={demo.code}
                   type="button"
                   onClick={() => selectDemoAccount(demo)}
-                  className="p-2 text-left bg-slate-800/60 hover:bg-slate-750 hover:border-cyan-500/50 border border-slate-700/60 rounded-lg transition group"
+                  className="p-2 text-left bg-slate-800/60 hover:bg-slate-750 hover:border-cyan-500/50 border border-slate-700/60 rounded-lg transition group cursor-pointer"
+                  disabled={loading}
                 >
                   <p className="text-xs font-bold text-slate-200 group-hover:text-cyan-400 truncate">{demo.role}</p>
                   <p className="text-[10px] text-slate-400 truncate">{demo.username}</p>
