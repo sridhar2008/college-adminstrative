@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { CalendarCheck, Award, AlertCircle, Clock, BookOpen, User, Phone, CheckCircle } from 'lucide-react';
+import { CalendarCheck, Award, AlertCircle, Clock, BookOpen, User, Phone, CheckCircle, IdCard, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import StudentIdCardModal from '../../components/StudentIdCardModal';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -10,6 +11,8 @@ export default function StudentDashboard() {
   const [marks, setMarks] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [idCardData, setIdCardData] = useState(null);
+  const [showIdCardModal, setShowIdCardModal] = useState(false);
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -37,6 +40,30 @@ export default function StudentDashboard() {
   const aggregatePct = totalConducted > 0 ? ((totalAttended / totalConducted) * 100).toFixed(1) : 100.0;
   const hasShortage = aggregatePct < 75.0;
 
+  const handleOpenIdCard = async () => {
+    try {
+      // Find my student profile id
+      const res = await api.get(`/students/lookup/${user?.roll_number || '2024CS101'}`);
+      if (res.data?.student?.id) {
+        const cardRes = await api.get(`/students/${res.data.student.id}/id-card`);
+        setIdCardData(cardRes.data);
+        setShowIdCardModal(true);
+      }
+    } catch (err) {
+      alert("Failed to load your ID card data.");
+    }
+  };
+
+  const handleUploadPhoto = async (photoBase64) => {
+    if (!idCardData) return;
+    try {
+      await api.post(`/students/${idCardData.id}/photo`, { photo_data: photoBase64 });
+      setIdCardData(prev => ({ ...prev, profile_image_url: photoBase64 }));
+    } catch (err) {
+      alert("Failed to upload photo. Please try again.");
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12 text-slate-500">Loading student profile & records...</div>;
   }
@@ -59,13 +86,23 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Aggregate Attendance Pill */}
-        <div className={`p-4 rounded-xl border backdrop-blur-sm text-center min-w-[160px] ${
-          hasShortage ? 'bg-rose-500/20 border-rose-500/30 text-rose-200' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200'
-        }`}>
-          <span className="text-xs uppercase font-bold tracking-wider block">Overall Attendance</span>
-          <span className="text-3xl font-black">{aggregatePct}%</span>
-          <span className="text-[11px] block mt-0.5">{hasShortage ? '⚠️ Shortage Alert (<75%)' : '✓ Good Standing'}</span>
+        {/* Aggregate Attendance Pill & ID Card button */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <button
+            onClick={handleOpenIdCard}
+            className="w-full sm:w-auto px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-cyan-500/25 transition cursor-pointer"
+          >
+            <IdCard className="w-4 h-4" />
+            <span>Download / View Student ID</span>
+          </button>
+
+          <div className={`p-4 rounded-xl border backdrop-blur-sm text-center min-w-[150px] ${
+            hasShortage ? 'bg-rose-500/20 border-rose-500/30 text-rose-200' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200'
+          }`}>
+            <span className="text-xs uppercase font-bold tracking-wider block">Overall Attendance</span>
+            <span className="text-3xl font-black">{aggregatePct}%</span>
+            <span className="text-[11px] block mt-0.5">{hasShortage ? '⚠️ Shortage Alert (<75%)' : '✓ Good Standing'}</span>
+          </div>
         </div>
       </div>
 
@@ -182,6 +219,15 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Student ID Card Modal */}
+      {showIdCardModal && idCardData && (
+        <StudentIdCardModal
+          idCardData={idCardData}
+          onClose={() => setShowIdCardModal(false)}
+          onUploadPhoto={handleUploadPhoto}
+        />
+      )}
     </div>
   );
 }

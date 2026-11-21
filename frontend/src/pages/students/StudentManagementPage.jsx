@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { Users, Search, Filter, Plus, Edit, Trash2, ArrowUpRight, Upload, Download, Eye, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { Users, Search, Filter, Plus, Edit, Trash2, ArrowUpRight, Upload, Download, Eye, CheckCircle2, AlertTriangle, X, IdCard, Camera } from 'lucide-react';
+import StudentIdCardModal from '../../components/StudentIdCardModal';
 
 export default function StudentManagementPage() {
   const [students, setStudents] = useState([]);
@@ -18,6 +19,7 @@ export default function StudentManagementPage() {
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(null); // student object
   const [viewModal, setViewModal] = useState(null); // student object
+  const [idCardModal, setIdCardModal] = useState(null); // student ID card data
   const [promoteModal, setPromoteModal] = useState(false);
   const [importModal, setImportModal] = useState(false);
   const [csvFile, setCsvFile] = useState(null);
@@ -196,6 +198,27 @@ export default function StudentManagementPage() {
     }
   };
 
+  const handleOpenIdCard = async (studentId) => {
+    try {
+      const res = await api.get(`/students/${studentId}/id-card`);
+      setIdCardModal(res.data);
+    } catch (err) {
+      alert("Failed to load student ID card details.");
+    }
+  };
+
+  const handleUploadPhotoForCard = async (photoBase64) => {
+    if (!idCardModal) return;
+    try {
+      await api.post(`/students/${idCardModal.id}/photo`, { photo_data: photoBase64 });
+      setIdCardModal(prev => ({ ...prev, profile_image_url: photoBase64 }));
+      // Also update student list state
+      setStudents(prev => prev.map(s => s.id === idCardModal.id ? { ...s, profile_image_url: photoBase64 } : s));
+    } catch (err) {
+      alert("Failed to upload photo. Please try again.");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -336,6 +359,14 @@ export default function StudentManagementPage() {
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end space-x-1">
+                        <button
+                          onClick={() => handleOpenIdCard(s.id)}
+                          title="Generate & View ID Card (Upload Photo)"
+                          className="px-2 py-1 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800 rounded-lg hover:bg-cyan-100 flex items-center space-x-1 transition font-bold"
+                        >
+                          <IdCard className="w-3.5 h-3.5" />
+                          <span>ID Card</span>
+                        </button>
                         <button
                           onClick={() => setViewModal(s)}
                           title="View Profile"
@@ -641,6 +672,15 @@ export default function StudentManagementPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Official Institutional ID Card Modal */}
+      {idCardModal && (
+        <StudentIdCardModal
+          idCardData={idCardModal}
+          onClose={() => setIdCardModal(null)}
+          onUploadPhoto={handleUploadPhotoForCard}
+        />
       )}
     </div>
   );

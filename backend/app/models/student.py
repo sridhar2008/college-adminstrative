@@ -20,7 +20,7 @@ class Student(BaseModel):
     blood_group = Column(String(10), nullable=True)
     college_email = Column(String(255), unique=True, nullable=False, index=True)
     phone = Column(String(20), nullable=True)
-    profile_image_url = Column(String(255), nullable=True)
+    profile_image_url = Column(String(5000000), nullable=True)  # Supports base64 data URLs & image URLs
     residential_address = Column(String(500), nullable=True)
     admission_status = Column(String(30), default="CONFIRMED", nullable=False)  # CONFIRMED, PROVISIONAL
     academic_status = Column(String(30), default="ACTIVE", nullable=False)      # ACTIVE, SUSPENDED, GRADUATED

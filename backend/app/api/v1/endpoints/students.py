@@ -43,12 +43,17 @@ class StudentCreateForm(BaseModel):
     initial_password: Optional[str] = "Student@123"
 
 
+class StudentPhotoUpload(BaseModel):
+    photo_data: str  # Base64 data URL or image URL
+
+
 class StudentUpdateForm(BaseModel):
     full_name: Optional[str] = None
     dob: Optional[str] = None
     gender: Optional[str] = None
     blood_group: Optional[str] = None
     phone: Optional[str] = None
+    profile_image_url: Optional[str] = None
     residential_address: Optional[str] = None
     admission_status: Optional[str] = None
     academic_status: Optional[str] = None
@@ -252,6 +257,8 @@ def list_students(
             "admission_status": s.admission_status,
             "dob": str(s.dob),
             "gender": s.gender,
+            "blood_group": s.blood_group,
+            "profile_image_url": s.profile_image_url,
             "residential_address": s.residential_address
         })
 
@@ -388,6 +395,8 @@ def update_student(
         student.phone = form.phone
         if student.user:
             student.user.phone = form.phone
+    if form.profile_image_url:
+        student.profile_image_url = form.profile_image_url
     if form.residential_address:
         student.residential_address = form.residential_address
     if form.admission_status:
@@ -409,6 +418,85 @@ def update_student(
     db.commit()
 
     return {"success": True, "message": "Student profile updated successfully."}
+
+
+@router.post("/{student_id}/photo")
+def upload_student_photo(
+    student_id: str,
+    req: StudentPhotoUpload,
+    current_user: User = Depends(RoleChecker(["admin", "dean", "hod", "student"])),
+    db: Session = Depends(get_db)
+):
+    """Upload or update student profile photo for ID card generation."""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student record not found.")
+
+    # Guard: if student role, can only upload for self
+    user_role = current_user.role.name if current_user.role else ""
+    if user_role == "student" and (not current_user.student_profile or current_user.student_profile.id != student.id):
+        raise HTTPException(status_code=403, detail="Unauthorized to upload photo for another student.")
+
+    student.profile_image_url = req.photo_data
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Student photo uploaded successfully.",
+        "profile_image_url": student.profile_image_url
+    }
+
+
+@router.get("/{student_id}/id-card")
+def get_student_id_card_data(
+    student_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get rich student profile data formatted specifically for official institutional ID card generation."""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student record not found.")
+
+    user_role = current_user.role.name if current_user.role else ""
+    if user_role == "student" and (not current_user.student_profile or current_user.student_profile.id != student.id):
+        raise HTTPException(status_code=403, detail="Unauthorized to access another student's ID card.")
+
+    dept = db.query(Department).filter(Department.id == student.department_id).first()
+    prog = db.query(Program).filter(Program.id == student.program_id).first()
+    batch = db.query(Batch).filter(Batch.id == student.batch_id).first()
+    sem = db.query(Semester).filter(Semester.id == student.current_semester_id).first()
+    sec = db.query(Section).filter(Section.id == student.section_id).first()
+    ay = db.query(AcademicYear).first()
+
+    parent = db.query(ParentGuardian).filter(ParentGuardian.student_id == student.id).first()
+
+    return {
+        "id": student.id,
+        "roll_number": student.roll_number,
+        "registration_number": student.registration_number,
+        "full_name": student.user.full_name if student.user else "Student Name",
+        "department_name": dept.name if dept else "Engineering",
+        "department_code": dept.code if dept else "ENG",
+        "program_name": prog.name if prog else "B.Tech",
+        "degree_level": prog.degree_level if prog else "UG",
+        "batch_name": batch.name if batch else "2024-2028",
+        "academic_year": ay.name if ay else "2024-2025",
+        "semester_number": sem.number if sem else 1,
+        "section_name": sec.name if sec else "A",
+        "dob": str(student.dob),
+        "blood_group": student.blood_group or "O+",
+        "phone": student.phone or "+91 9876543210",
+        "college_email": student.college_email,
+        "emergency_contact": parent.phone if parent else student.phone,
+        "parent_name": parent.full_name if parent else "Parent / Guardian",
+        "profile_image_url": student.profile_image_url,
+        "residential_address": student.residential_address or "College Hostel / Campus",
+        "institution_name": "APEX ENGINEERING COLLEGE",
+        "institution_affiliation": "Affiliated to Anna University | Approved by AICTE",
+        "institution_code": "COLLEGE CODE: 3124",
+        "valid_until": "2028" if (prog and prog.degree_level == "UG") else ("2026" if (prog and prog.degree_level == "PG") else "2029")
+    }
 
 
 @router.patch("/{student_id}/status")

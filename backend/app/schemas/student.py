@@ -17,6 +17,7 @@ class StudentBase(BaseModel):
     college_email: str
     phone: Optional[str] = None
     residential_address: Optional[str] = None
+    profile_image_url: Optional[str] = None
     admission_status: str = "CONFIRMED"
     academic_status: str = "ACTIVE"
     admission_date: date
