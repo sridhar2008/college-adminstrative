@@ -124,8 +124,8 @@ export default function DashboardLayout() {
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="font-bold text-lg tracking-tight text-white block">Apex Engineering</span>
-              <span className="text-xs text-cyan-400 font-medium tracking-wide">CSMS Academic Portal</span>
+              <span className="font-bold text-sm tracking-tight text-white block leading-tight">Dhanalakshmi Srinivasan</span>
+              <span className="text-[10px] text-cyan-400 font-medium tracking-wide">College of Engineering, Trichy</span>
             </div>
           </div>
           <button

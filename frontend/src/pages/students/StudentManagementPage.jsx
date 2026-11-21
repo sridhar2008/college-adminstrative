@@ -588,6 +588,27 @@ export default function StudentManagementPage() {
                   />
                 </div>
                 <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Blood Group</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. O+, A+, B+"
+                    value={editModal.blood_group || ''}
+                    onChange={(e) => setEditModal({ ...editModal, blood_group: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={editModal.dob || ''}
+                    onChange={(e) => setEditModal({ ...editModal, dob: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl text-sm"
+                  />
+                </div>
+                <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Academic Status</label>
                   <select
                     value={editModal.academic_status}
@@ -600,6 +621,16 @@ export default function StudentManagementPage() {
                     <option value="PROVISIONAL">PROVISIONAL</option>
                   </select>
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Residential Address</label>
+                <textarea
+                  rows="2"
+                  value={editModal.residential_address || ''}
+                  onChange={(e) => setEditModal({ ...editModal, residential_address: e.target.value })}
+                  placeholder="Hostel / Home address"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl text-sm"
+                />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setEditModal(null)} className="px-4 py-2 text-xs font-semibold text-slate-500">Cancel</button>

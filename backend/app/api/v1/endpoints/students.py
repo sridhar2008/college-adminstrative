@@ -492,9 +492,11 @@ def get_student_id_card_data(
         "parent_name": parent.full_name if parent else "Parent / Guardian",
         "profile_image_url": student.profile_image_url,
         "residential_address": student.residential_address or "College Hostel / Campus",
-        "institution_name": "APEX ENGINEERING COLLEGE",
-        "institution_affiliation": "Affiliated to Anna University | Approved by AICTE",
-        "institution_code": "COLLEGE CODE: 3124",
+        "institution_name": "DHANALAKSHMI SRINIVASAN COLLEGE OF ENGINEERING",
+        "institution_location": "TIRUCHIRAPPALLI (TRICHY), TAMIL NADU",
+        "institution_affiliation": "Affiliated to Anna University, Chennai | Approved by AICTE, New Delhi",
+        "institution_code": "COLLEGE CODE: 3805",
+        "principal_sign_title": "PRINCIPAL / DEAN",
         "valid_until": "2028" if (prog and prog.degree_level == "UG") else ("2026" if (prog and prog.degree_level == "PG") else "2029")
     }
 

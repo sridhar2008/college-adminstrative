@@ -77,17 +77,22 @@ export default function StudentIdCardModal({ idCardData, onClose, onUploadPhoto 
             {/* Institution Brand Header */}
             <div className="text-center pt-2">
               <div className="flex items-center justify-center space-x-2 mb-1">
-                <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-black text-xs text-white">
-                  AEC
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-700 to-cyan-500 flex items-center justify-center font-black text-xs text-white shadow-md">
+                  DSCE
                 </div>
-                <h4 className="font-black text-sm tracking-wide text-cyan-400 print:text-blue-900 leading-tight">
-                  {idCardData.institution_name || "APEX ENGINEERING COLLEGE"}
-                </h4>
+                <div>
+                  <h4 className="font-black text-xs tracking-wide text-cyan-400 print:text-blue-900 leading-tight">
+                    {idCardData.institution_name || "DHANALAKSHMI SRINIVASAN COLLEGE OF ENGINEERING"}
+                  </h4>
+                  <p className="text-[8px] font-bold text-slate-300 print:text-slate-800 tracking-wider">
+                    {idCardData.institution_location || "TIRUCHIRAPPALLI (TRICHY), TAMIL NADU"}
+                  </p>
+                </div>
               </div>
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold print:text-slate-600">
-                {idCardData.institution_affiliation || "Affiliated to Anna University | AICTE Approved"}
+              <p className="text-[8px] uppercase tracking-wider text-slate-400 font-semibold print:text-slate-600 mt-1">
+                {idCardData.institution_affiliation || "Affiliated to Anna University, Chennai | AICTE Approved"}
               </p>
-              <div className="h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent my-2"></div>
+              <div className="h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent my-1.5"></div>
             </div>
 
             {/* Student Photo Section */}
@@ -224,10 +229,10 @@ export default function StudentIdCardModal({ idCardData, onClose, onUploadPhoto 
               <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-[9px] text-slate-400 leading-relaxed print:bg-slate-100 print:text-black">
                 <p className="font-semibold text-slate-300 print:text-black mb-0.5">TERMS & CONDITIONS:</p>
                 1. This card is non-transferable and must be carried on campus at all times.<br/>
-                2. If found, please return to: Office of the Dean / Principal, Apex Engineering College.
+                2. If found, please return to: Office of the Principal, Dhanalakshmi Srinivasan College of Engineering, Trichy, Tamil Nadu.
               </div>
 
-              {/* Barcode & Signatures */}
+              {/* Barcode & Official Digital Signature */}
               <div className="flex items-end justify-between pt-1">
                 <div className="text-center">
                   <div className="font-mono font-bold tracking-widest text-xs text-white print:text-black">
@@ -236,9 +241,15 @@ export default function StudentIdCardModal({ idCardData, onClose, onUploadPhoto 
                   <span className="text-[8px] font-mono text-slate-500 uppercase">{idCardData.roll_number}</span>
                 </div>
 
-                <div className="text-center">
-                  <div className="w-20 border-b border-slate-600 print:border-black mb-1"></div>
-                  <span className="text-[9px] font-bold text-slate-400 print:text-black uppercase">Principal / Dean</span>
+                <div className="text-center flex flex-col items-center">
+                  {/* Digital Signature Emblem & Script */}
+                  <div className="font-serif italic font-bold text-cyan-300 print:text-blue-900 text-xs tracking-wider -mb-0.5">
+                    Dr. S. Rajasekaran
+                  </div>
+                  <div className="w-24 border-b border-slate-500 print:border-black mb-0.5"></div>
+                  <span className="text-[8px] font-bold text-slate-400 print:text-black uppercase tracking-wider">
+                    {idCardData.principal_sign_title || "PRINCIPAL / DEAN"}
+                  </span>
                 </div>
               </div>
             </div>

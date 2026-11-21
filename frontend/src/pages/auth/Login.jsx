@@ -67,8 +67,11 @@ export default function Login() {
 
           <div className="space-y-3">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
-              Apex Engineering College
+              Dhanalakshmi Srinivasan College of Engineering
             </h1>
+            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest">
+              Tiruchirappalli (Trichy), Tamil Nadu
+            </p>
             <p className="text-base text-slate-400 leading-relaxed">
               Centralized Student Management System (CSMS) supporting Undergraduate (UG 4-Year), Postgraduate (PG 2-Year), and Ph.D. scholars.
             </p>
