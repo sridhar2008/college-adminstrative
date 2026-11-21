@@ -4,8 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AppRoutes from './routes/AppRoutes';
 
-// HashRouter allows seamless routing on GitHub Pages static deployment without server rewrites!
-const Router = import.meta.env.BASE_URL && import.meta.env.BASE_URL.startsWith('./') ? HashRouter : BrowserRouter;
+// HashRouter eliminates 404s on GitHub Pages completely!
+const Router = HashRouter;
 
 export default function App() {
   return (

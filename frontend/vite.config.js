@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Use relative base for versatile deployment on GitHub Pages or custom subpaths
-  base: './',
+  // GitHub Pages repository subpath
+  base: '/college-adminstrative/',
   server: {
     port: 5173,
     proxy: {
