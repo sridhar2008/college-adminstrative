@@ -117,7 +117,7 @@ def get_faculty_assigned_classes(
             "subject_code": a.subject.code if a.subject else "",
             "subject_name": a.subject.name if a.subject else "",
             "section_name": a.section.name if a.section else "A",
-            "semester_number": a.semester.number if a.semester else 1,
+            "semester_number": a.semester_id if a.semester_id else 1,
             "students": [
                 {
                     "id": s.id,
