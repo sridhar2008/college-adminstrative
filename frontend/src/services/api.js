@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+// Production Cloud API fallback for live website deployment (e.g. GitHub Pages)
+const DEFAULT_PROD_API = 'https://csms-backend-9lg0.onrender.com/api/v1';
+
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  const custom = localStorage.getItem('csms_custom_api_url');
+  if (custom) return custom;
+  
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://127.0.0.1:8000/api/v1';
+  }
+  return DEFAULT_PROD_API;
+};
+
+const API_BASE_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
