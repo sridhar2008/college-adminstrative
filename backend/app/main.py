@@ -11,6 +11,12 @@ from app.api.v1.api import api_router
 async def lifespan(app: FastAPI):
     # Startup: Initialize all database tables automatically if they don't already exist
     Base.metadata.create_all(bind=engine)
+    try:
+        from seed_data import seed_database
+        seed_database()
+        print("[Lifespan] Database tables verified and seed records checked/initialized.")
+    except Exception as e:
+        print(f"[Lifespan Warning] Seed check failed: {e}")
     yield
     # Teardown logic if needed
 

@@ -2,24 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
-import { GraduationCap, Lock, User, AlertCircle, CheckCircle2, Shield, ArrowRight } from 'lucide-react';
+import { GraduationCap, Lock, User, AlertCircle, CheckCircle2, Shield, ArrowRight, Settings, Globe } from 'lucide-react';
+
+const DEFAULT_DEMOS = [
+  { role: "Dean", code: "dean", username: "dean@engineering.edu", password: "Dean@123", description: "Institution overview & academic audits" },
+  { role: "Department HOD", code: "hod", username: "hod.cse@engineering.edu", password: "Hod@123", description: "Faculty allocation, approvals & marks" },
+  { role: "Professor / Faculty", code: "faculty", username: "prof.sharma@engineering.edu", password: "Faculty@123", description: "Enters attendance & continuous assessments" },
+  { role: "Subject Faculty", code: "subject_faculty", username: "faculty.anita@engineering.edu", password: "Faculty@123", description: "Section-wise evaluation" },
+  { role: "Guest Lecturer", code: "guest", username: "guest.lecturer@engineering.edu", password: "Guest@123", description: "Assigned session details & materials" },
+  { role: "Student (UG Year 2)", code: "student", username: "2024CS101", password: "Student@123", description: "Arun Kumar (B.Tech CSE Sem 3)" },
+  { role: "Admin Staff", code: "admin", username: "admin@engineering.edu", password: "Admin@123", description: "Institutional registry & batch generator" },
+  { role: "Parent / Guardian", code: "parent", username: "parent.ramesh@gmail.com", password: "Parent@123", description: "Ward's attendance and marks" }
+];
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [demoAccounts, setDemoAccounts] = useState([]);
+  const [demoAccounts, setDemoAccounts] = useState(DEFAULT_DEMOS);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
+  const [customApiUrl, setCustomApiUrl] = useState(localStorage.getItem('csms_custom_api_url') || '');
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleSaveApiUrl = (e) => {
+    e.preventDefault();
+    if (customApiUrl.trim()) {
+      localStorage.setItem('csms_custom_api_url', customApiUrl.trim());
+    } else {
+      localStorage.removeItem('csms_custom_api_url');
+    }
+    window.location.reload();
+  };
 
   useEffect(() => {
     const fetchDemos = async () => {
       try {
         const demos = await authService.getDemoAccounts();
-        setDemoAccounts(demos);
+        if (Array.isArray(demos) && demos.length > 0) {
+          setDemoAccounts(demos);
+        }
       } catch (err) {
-        console.error("Could not fetch demo accounts:", err);
+        console.warn("Using offline demo fallback accounts:", err);
       }
     };
     fetchDemos();
@@ -167,8 +192,38 @@ export default function Login() {
               <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
                 1-Click Quick Demo Login (8 Roles)
               </span>
-              <span className="text-[11px] text-slate-500">Click any role to test</span>
+              <button
+                type="button"
+                onClick={() => setShowConfig(!showConfig)}
+                className="text-[11px] text-slate-400 hover:text-cyan-400 flex items-center space-x-1 transition"
+                title="Configure Backend Cloud API URL"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Cloud API Server</span>
+              </button>
             </div>
+
+            {showConfig && (
+              <form onSubmit={handleSaveApiUrl} className="mb-4 p-3 bg-slate-800/90 border border-slate-700 rounded-xl space-y-2">
+                <div className="flex items-center space-x-2 text-xs font-semibold text-slate-300">
+                  <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Cloud API Server URL</span>
+                </div>
+                <input
+                  type="url"
+                  placeholder="https://csms-backend-9lg0.onrender.com/api/v1"
+                  value={customApiUrl}
+                  onChange={(e) => setCustomApiUrl(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-cyan-300 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                />
+                <div className="flex justify-between items-center text-[10px] text-slate-400">
+                  <span>Current: <b className="text-slate-300 font-mono">{customApiUrl || 'https://csms-backend-9lg0.onrender.com/api/v1'}</b></span>
+                  <button type="submit" className="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition">
+                    Save & Reload
+                  </button>
+                </div>
+              </form>
+            )}
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {demoAccounts.map((demo) => (

@@ -38,7 +38,7 @@ jobs:
       - name: Build Production Assets
         working-directory: ./frontend
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://csms-backend-9lg0.onrender.com/api/v1' }}
         run: npm run build
 
       - name: Copy index.html to 404.html for SPA routing

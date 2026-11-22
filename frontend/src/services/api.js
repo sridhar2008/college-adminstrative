@@ -42,11 +42,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login if unauthorized
+      // Clear token and user info
       localStorage.removeItem('csms_token');
       localStorage.removeItem('csms_user');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      // Do not redirect if it's the login attempt itself failing
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest && !window.location.hash.includes('/login')) {
+        window.location.hash = '#/login';
       }
     }
     return Promise.reject(error);

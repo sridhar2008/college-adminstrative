@@ -18,8 +18,9 @@ def seed_database():
     try:
         # Check if already seeded
         existing_role = db.query(models.Role).first()
-        if existing_role:
-            print("[✓] Database already populated with seed records.")
+        existing_admin = db.query(models.User).filter(models.User.email == "admin@engineering.edu").first()
+        if existing_role and existing_admin:
+            print("[✓] Database already populated with seed records and admin user.")
             return
 
         print("[*] Creating System Roles...")
