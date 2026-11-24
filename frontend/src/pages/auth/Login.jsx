@@ -54,6 +54,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    authService.logout();
 
     try {
       await login(username, password);
@@ -66,6 +67,7 @@ export default function Login() {
   };
 
   const selectDemoAccount = async (demo) => {
+    authService.logout();
     setUsername(demo.username);
     setPassword(demo.password);
     setError('');

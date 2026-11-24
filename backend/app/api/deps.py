@@ -40,8 +40,9 @@ def get_current_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User account associated with this token not found",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account associated with this token not found. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     
     if not user.is_active:

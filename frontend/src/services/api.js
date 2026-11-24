@@ -41,7 +41,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const isTokenError =
+      error.response &&
+      (error.response.status === 401 ||
+        (error.response.status === 404 &&
+          typeof error.response.data?.detail === 'string' &&
+          error.response.data.detail.toLowerCase().includes('token')));
+
+    if (isTokenError) {
       // Clear token and user info
       localStorage.removeItem('csms_token');
       localStorage.removeItem('csms_user');
