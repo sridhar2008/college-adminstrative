@@ -114,8 +114,10 @@ export default function DashboardLayout() {
 
       {/* Sidebar - Mobile Drawer & Desktop Static Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-slate-900 text-slate-100 flex flex-col shadow-2xl lg:shadow-none transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-slate-900 text-slate-100 flex-col shadow-2xl lg:shadow-none transition-all duration-300 ease-in-out lg:static lg:translate-x-0 lg:flex ${
+          sidebarOpen
+            ? 'flex translate-x-0'
+            : 'hidden lg:flex -translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Header */}
